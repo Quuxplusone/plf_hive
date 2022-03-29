@@ -50,11 +50,18 @@ struct hive_limits // for use in block_capacity setting/getting functions and co
 };
 
 
-enum class hive_priority { performance, memory_use };
+namespace hive_priority {
+  struct performance {
+    using skipfield_type = unsigned short;
+  };
+  struct memory_use {
+    using skipfield_type = unsigned char;
+  };
+}
 
 
 
-template <class element_type, class allocator_type = std::allocator<element_type>, plf::hive_priority priority = plf::hive_priority::performance> class hive : private allocator_type // Empty base class optimisation (EBCO) - inheriting allocator functions
+template <class element_type, class allocator_type = std::allocator<element_type>, class priority = plf::hive_priority::performance> class hive : private allocator_type // Empty base class optimisation (EBCO) - inheriting allocator functions
 {
 	// Type-switching pattern:
 	template <bool flag, class is_true, class is_false> struct choose;
@@ -69,7 +76,7 @@ template <class element_type, class allocator_type = std::allocator<element_type
 		typedef is_false type;
 	};
 
-	typedef typename choose<priority == plf::hive_priority::performance, unsigned short, unsigned char>::type		skipfield_type; // Note: unsigned short is equivalent to uint_least16_t ie. Using 16-bit unsigned integer in best-case scenario, greater-than-16-bit unsigned integer where platform doesn't support 16-bit types. unsigned char is always == 1 byte, as opposed to uint_8, which may not be
+	typedef typename priority::skipfield_type skipfield_type;
 
 public:
 	// Standard container typedefs:
@@ -4211,7 +4218,7 @@ struct hive_eq_to
 namespace std
 {
 
-	template <class element_type, class allocator_type, plf::hive_priority priority>
+	template <class element_type, class allocator_type, class priority>
 	inline void swap (plf::hive<element_type, allocator_type, priority> &a, plf::hive<element_type, allocator_type, priority> &b) noexcept(std::allocator_traits<allocator_type>::propagate_on_container_swap::value || std::allocator_traits<allocator_type>::is_always_equal::value)
 	{
 		a.swap(b);
@@ -4219,7 +4226,7 @@ namespace std
 
 
 
-	template <class element_type, class allocator_type, plf::hive_priority priority, class predicate_function>
+	template <class element_type, class allocator_type, class priority, class predicate_function>
 	typename plf::hive<element_type, allocator_type, priority>::size_type erase_if(plf::hive<element_type, allocator_type, priority> &container, predicate_function predicate)
 	{
 		typedef typename plf::hive<element_type, allocator_type, priority> hive;
@@ -4262,7 +4269,7 @@ namespace std
 
 
 
-	template <class element_type, class allocator_type, plf::hive_priority priority>
+	template <class element_type, class allocator_type, class priority>
 	inline typename plf::hive<element_type, allocator_type, priority>::size_type erase(plf::hive<element_type, allocator_type, priority> &container, const element_type &value)
 	{
 		return erase_if(container, plf::hive_eq_to<element_type>(value));
