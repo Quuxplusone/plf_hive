@@ -167,7 +167,10 @@ int main()
 			advance(plus_two_hundred, 200);
 
 			failpass("Iterator + distance test", distance(p_hive.begin(), plus_twenty) == 20);
-			failpass("Iterator - distance test", distance(plus_two_hundred, p_hive.begin()) == -200);
+			failpass("Iterator + distance test 2", plus_twenty - p_hive.begin() == 20);
+			//failpass("Iterator - distance test", distance(plus_two_hundred, p_hive.begin()) == -200);
+			failpass("Iterator - distance test", ranges::distance(plus_two_hundred, p_hive.begin()) == -200);
+			failpass("Iterator - distance test", p_hive.begin() - plus_two_hundred == -200);
 
 			hive<int *>::const_iterator plus_two_hundred_c = plus_two_hundred;
 			hive<int *> hive_copy(plus_twenty, plus_two_hundred_c);
@@ -186,7 +189,7 @@ int main()
 			hive<int *>::const_iterator prev_iterator = prev(p_hive.cend(), 300);
 
 			failpass("Iterator next test", distance(p_hive.begin(), next_iterator) == 5);
-			failpass("Const iterator prev test", distance(p_hive.cend(), prev_iterator) == -300);
+			failpass("Const iterator prev test", ranges::distance(p_hive.cend(), prev_iterator) == -300);
 
 			hive<int *>::iterator prev_iterator2 = prev(p_hive.end(), 300);
 			failpass("Iterator/Const iterator equality operator test", prev_iterator == prev_iterator2);
@@ -312,9 +315,17 @@ int main()
 			failpass("Negative iteration test", total == 399);
 
 
+			auto safe_decr = [&](auto& it, int distance) {
+				if (it - p_hive.begin() > distance) {
+					it -= distance;
+				} else {
+					it = p_hive.begin();
+				}
+			};
+
 			total = 0;
 
-			for(hive<int *>::iterator the_iterator = --(hive<int *>::iterator(p_hive.end())); the_iterator != p_hive.begin(); advance(the_iterator, -2))
+			for(hive<int *>::iterator the_iterator = --(hive<int *>::iterator(p_hive.end())); the_iterator != p_hive.begin(); safe_decr(the_iterator, 2))
 			{
 				++total;
 			}

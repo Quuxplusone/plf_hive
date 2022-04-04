@@ -52,7 +52,7 @@ namespace plf
 struct hive_limits // for use in block_capacity setting/getting functions and constructors
 {
 	size_t min, max;
-	hive_limits(const size_t minimum, const size_t maximum) noexcept : min(minimum), max(maximum) {}
+	constexpr hive_limits(const size_t minimum, const size_t maximum) noexcept : min(minimum), max(maximum) {}
 };
 
 
@@ -423,43 +423,40 @@ public:
 
 
 	public:
-
-		// Friend functions:
-
-		template <class distance_type>
-		friend inline void advance(hive_iterator &it, distance_type distance)
+		hive_iterator& operator+=(difference_type distance)
 		{
-			it.advance(static_cast<hive_iterator::difference_type>(distance));
+			this->advance(distance);
+			return *this;
 		}
 
-
-
-		template <class distance_type>
-		friend inline hive_iterator next(const hive_iterator &it, const distance_type distance)
+		hive_iterator& operator-=(difference_type distance)
 		{
-			hive_iterator return_iterator(it);
-			return_iterator.advance(static_cast<hive_iterator::difference_type>(distance));
-			return return_iterator;
+			this->advance(-distance);
+			return *this;
 		}
 
-
-
-		template <class distance_type>
-		friend inline hive_iterator prev(const hive_iterator &it, const distance_type distance)
+		friend hive_iterator operator+(hive_iterator it, difference_type distance)
 		{
-			hive_iterator return_iterator(it);
-			return_iterator.advance(-static_cast<hive_iterator::difference_type>(distance));
-			return return_iterator;
+			it += distance;
+			return it;
 		}
 
-
-
-		friend inline typename hive_iterator::difference_type distance(const hive_iterator &first, const hive_iterator &last)
+		friend hive_iterator operator+(difference_type distance, hive_iterator it)
 		{
-			return first.distance(last);
+			it += distance;
+			return it;
 		}
 
+		friend hive_iterator operator-(hive_iterator it, difference_type distance)
+		{
+			it -= distance;
+			return it;
+		}
 
+		friend difference_type operator-(const hive_iterator &it, const hive_iterator &jt)
+		{
+			return jt.distance(it);
+		}
 
 	private:
 
@@ -1075,54 +1072,10 @@ public:
 		// Used by rend(), etc:
 		hive_reverse_iterator(const group_pointer_type group_p, const aligned_pointer_type element_p, const skipfield_pointer_type skipfield_p) noexcept: it(group_p, element_p, skipfield_p) {}
 
-
-
-	public:
-		// Friend functions:
-
-		template <class distance_type>
-		friend inline void advance(hive_reverse_iterator &it, distance_type distance)
-		{
-			it.advance(static_cast<hive_reverse_iterator::difference_type>(distance));
-		}
-
-
-
-		template <class distance_type>
-		friend inline hive_reverse_iterator next(const hive_reverse_iterator &it, const distance_type distance)
-		{
-			hive_reverse_iterator return_iterator(it);
-			return_iterator.advance(static_cast<hive_reverse_iterator::difference_type>(distance));
-			return return_iterator;
-		}
-
-
-
-		template <class distance_type>
-		friend inline hive_reverse_iterator prev(const hive_reverse_iterator &it, const distance_type distance)
-		{
-			hive_reverse_iterator return_iterator(it);
-			return_iterator.advance(-static_cast<hive_reverse_iterator::difference_type>(distance));
-			return return_iterator;
-		}
-
-
-
-		friend inline typename hive_reverse_iterator::difference_type distance(const hive_reverse_iterator &first, const hive_reverse_iterator &last)
-		{
-			return first.distance(last);
-		}
-
-
-
-		// distance implementation:
-
-		inline difference_type distance(const hive_reverse_iterator &last) const
+		difference_type distance(const hive_reverse_iterator &last) const
 		{
 			return last.it.distance(it);
 		}
-
-
 
 	private:
 
